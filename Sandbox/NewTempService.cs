@@ -83,8 +83,9 @@ internal static class NewTempService
             string name = Base36.ToBase36(i);
             if (requestedName is not null)
             {
-                string suffix = name;
-                name = requestedName[..Math.Min(requestedName.Length, 255 - suffix.Length)] + suffix;
+                name = requestedName + name;
+                if (name.Length > 255)
+                    throw new PathTooLongException("The requested name plus its Base36 suffix exceeds 255 characters.");
             }
             string candidate = Path.Combine(root, name);
             if (InputParser.IsValidName(name) && !folders.Contains(name) && !File.Exists(candidate) && !Directory.Exists(candidate))
