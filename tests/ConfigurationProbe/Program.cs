@@ -55,6 +55,11 @@ foreach (string text in new[] { "", "MaximumIndex =", "MaximumIndex = broken", "
 }
 
 string customRoot = Path.Combine(NewTemp.AppPaths.Root, "custom sandbox");
+foreach (string language in new[] { "", "../invalid", "unknown-language", "de" })
+{
+    Load($"Language = {language}");
+    Assert(Value<string>("Language") == "system", "Invalid language did not fall back to system.");
+}
 Load($"RootDirectory = {customRoot}\nMaximumIndex = 25\nLanguage = en\nFutureSetting = untouched");
 Assert(Value<string>("RootDirectory") == customRoot, "Custom root was not preserved.");
 Assert(Value<int>("MaximumIndex") == 25, "Custom limit was not preserved.");

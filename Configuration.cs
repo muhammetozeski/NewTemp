@@ -33,6 +33,25 @@ internal static class Configuration
             Settings.RootDirectory.Value = DefaultRootDirectory;
         }
 
-        Log($"Configuration ready; root={Settings.RootDirectory.Value}; maximumIndex={Settings.MaximumIndex.Value}", isRun: IsLogEnabled);
+        string language = Settings.Language.Value.Trim().ToLowerInvariant();
+        try
+        {
+            if (language.Length == 0)
+                language = "system";
+            if (language != "system")
+            {
+                _ = System.Globalization.CultureInfo.GetCultureInfo(language);
+                if (language is not ("tr" or "en") && !File.Exists(Path.Combine(AppPaths.UserData, $"lang.{language}.xml")))
+                    throw new ArgumentException("The selected language has no local resource file.");
+            }
+            Settings.Language.Value = language;
+        }
+        catch (ArgumentException exception)
+        {
+            Log($"Invalid Language; fallback=system; error={exception}", isRun: IsLogEnabled);
+            Settings.Language.Value = "system";
+        }
+
+        Log($"Configuration ready; root={Settings.RootDirectory.Value}; maximumIndex={Settings.MaximumIndex.Value}; language={Settings.Language.Value}", isRun: IsLogEnabled);
     }
 }
