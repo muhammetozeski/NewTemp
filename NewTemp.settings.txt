@@ -1,0 +1,4 @@
+# NewTemp Configuration
+RootDirectory = C:\C
+MaximumIndex = 10000
+Language = system

@@ -1,0 +1,12 @@
+bin/
+obj/
+publish/
+work/
+AppCache/
+UserData/
+UserCache/
+tests/bin/
+tests/obj/
+*.pfx
+Imzalama.pfx
+PFX-PAROLA.txt
