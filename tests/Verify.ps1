@@ -1,8 +1,15 @@
 [CmdletBinding()]
-param([string]$Executable = (Join-Path $PSScriptRoot '..\publish\self-contained\NewTemp.exe'))
+param(
+    [string]$Executable = 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe',
+    [string]$ScratchDirectory
+)
 $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$testRoot = Join-Path $projectRoot ('work\tests\' + [Guid]::NewGuid().ToString('N'))
+if (-not $ScratchDirectory) {
+    $ScratchDirectory = & 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe'
+    if ($LASTEXITCODE -ne 0) { throw 'NewTemp could not create a temporary folder.' }
+}
+$testRoot = Join-Path $ScratchDirectory ('tests\' + [Guid]::NewGuid().ToString('N'))
 $appRoot = Join-Path $testRoot 'portable'
 [IO.Directory]::CreateDirectory($appRoot) | Out-Null
 Copy-Item -LiteralPath $Executable -Destination (Join-Path $appRoot 'NewTemp.exe')

@@ -20,7 +20,7 @@ An unavailable settings file is logged, and startup retains default values. A mi
 
 `AppPaths` uses `AppContext.BaseDirectory`, independent of the terminal working directory. A single-file distribution contains the executable and the sample configuration. Runtime-created data uses `UserData/lang.tr.xml`, `UserData/lang.en.xml`, and `AppCache/Logs` under the portable root. User sandbox items go to the external configured `RootDirectory`.
 
-The supplied logger writes through its background queue. Console logging defaults to false so a successful call prints only the result path. Each log filename includes its process identifier to separate concurrent calls. Automatic pruning is disabled; the original queued writer has no shutdown flush protocol, so a return from `Log` does not guarantee that every queued record reached disk before process exit.
+The supplied logger writes through its background queue. Console logging defaults to false so a successful call prints only the result path. Each log filename includes its process identifier to separate concurrent calls. The original queued writer has no shutdown flush protocol, so a return from `Log` does not guarantee that every queued record reached disk before process exit.
 
 ## Verification and releases
 
@@ -28,4 +28,4 @@ The package-free [configuration probe](../tests/ConfigurationProbe/Program.cs) c
 
 The integration suite ran the copied executable from a different working directory, then relocated its portable folder. It found the same configuration and language files, created the configured sandbox, and preserved the existing configuration bytes.
 
-[Publish.ps1](../Publish.ps1) produces two Windows x64 single-file executables under `publish/`, relative to the project root. The self-contained output uses .NET 10.0.12; the framework-dependent output requires .NET 10. Both retain the same settings filename. The signed executables are released separately with `NewTemp.settings.txt` and `SignatureTrust.zip`. Real user settings, logs, and cache directories are excluded from release assets.
+[Publish.ps1](../scripts/Publish.ps1) produces two Windows x64 single-file executables in `publish/` under a NewTemp scratch directory. Pass `-ScratchDirectory` to reuse a task's existing folder; otherwise the script obtains one from the installed NewTemp. Build intermediates also remain there, under `build/`. The self-contained output uses .NET 10.0.12; the framework-dependent output requires .NET 10. Both retain the same settings filename. Real user settings, logs, and cache directories are excluded from release assets.

@@ -10,4 +10,4 @@ Write English, complete explanations with concrete inputs and outcomes. Keep one
 
 Add new pages to the nearest index with a sentence explaining when to read them. Update existing topics when behavior changes instead of leaving competing descriptions. Check changed links and remove copied template names, stale claims, and redundant text before delivery.
 
-Temporary outputs and experiments belong in ignored work/ under the project root. They are not documentation. A dated handover belongs in Walkthrough and should link to reusable knowledge in Docs.
+Temporary outputs and experiments belong in a folder obtained from NewTemp, outside the source project. Reuse that folder for the same task and organize its contents by purpose. They are not documentation. A dated handover belongs in Walkthrough and should link to reusable knowledge in Docs.
