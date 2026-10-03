@@ -4,20 +4,22 @@ Read this before changing command-line parsing, name selection, or moving user d
 
 ## Precedence and result
 
-`InputParser.Parse` selects one action in this order:
+`InputParser.Parse` recognizes named command-line content and redirected input before applying the original path/name/text selection:
 
 | Input | Action | Printed result |
 | --- | --- | --- |
 | No arguments or an empty argument | Allocate a Base36 directory | Created directory |
+| Redirected standard input and one valid filename with an extension | Copy incoming bytes into a newly allocated sandbox | New file path |
+| A valid filename with an extension followed by content arguments | Write the original content tail after one separator | New file path |
 | Existing file path | Move the file, retaining its filename and bytes | New file path |
 | Existing directory path | Move the directory into a new sandbox | New directory path |
 | Double-quoted valid filename with an extension, followed by any content | Write the exact tail under that filename | New file path |
 | Valid Windows directory name | Create or return that named directory under the root | Named directory |
 | Any other text | Allocate a Base36 directory and its first unused Base36 `.txt` name | New text file path |
 
-Existing paths win even when quoted. A nonexistent path containing separators is text. Windows device names, trailing spaces or periods, and traversal segments cannot become directory names; they become text instead. Quoted names containing a path cannot escape the sandbox and fall through to text.
+Existing paths win in the original path/name/text selection even when quoted. A stream request treats its filename as the destination name, leaving any matching source file untouched. A nonexistent path containing separators is text. Windows device names, trailing spaces or periods, and traversal segments cannot become directory names; they become text instead. Quoted names containing a path cannot escape the sandbox and fall through to text.
 
-Only a quoted filename with an extension selects named content. The tail begins immediately after the closing double quote. For `"test.mp3"  content "kept"`, the file contains exactly two leading spaces, `content`, one space, and `"kept"`. No extension-specific decoding is performed. Text output uses UTF-8 without a byte-order marker; moved file bytes are unchanged.
+A normal command is `NewTemp "test.mp3" content`. The first space or tab after the filename is syntax; everything after it is content. For `"test.mp3"  content "kept"`, the file contains one leading space, `content`, one space, and `"kept"`. No extension-specific decoding is performed. Text output uses UTF-8 without a byte-order marker; moved and streamed file bytes are unchanged. The older single-argument literal form remains accepted.
 
 ## Windows quoting boundary
 
@@ -25,7 +27,13 @@ Only a quoted filename with an extension selects named content. The tail begins 
 
 For multiple arguments, `GetCommandLineW` provides the original Windows command line, and the executable token is removed. `Environment.CommandLine` reconstructs the argument text: the actual integration test lost repeated spaces and content quotes with that property. The native input fixed the same test. Preserve this distinction when refactoring.
 
-The shell must pass the characters to NewTemp. In PowerShell, a single-quoted outer string such as `'"test.mp3"literal text'` retains the filename quotes. The Windows raw-argument form `"test.mp3"  raw   content "quoted"` was also exercised directly through `ProcessStartInfo.Arguments`.
+The shell must pass the characters to NewTemp. Ordinary PowerShell invocation with `"test.mp3" content` is supported even when PowerShell omits unnecessary filename quotes from the native command line. Filename identity comes from the decoded first argument; the original native tail preserves content spacing and quotes. The raw argument form was also exercised through `ProcessStartInfo.Arguments`.
+
+## Stream input
+
+`producer.exe | NewTemp "file.mp3"` redirects the producer's output into NewTemp. `Console.OpenStandardInput` and `Stream.CopyTo` transfer those bytes directly into a new `FileStream`; no text reader, encoding conversion, or full-file buffer is used. A successful result is printed only after end of input and file disposal. An empty stream creates an empty file. With no arguments, directory allocation remains unchanged even if standard input is closed or redirected.
+
+The v1.1.0 input suite in [Verify-Input.ps1](../tests/Verify-Input.ps1) verified normal filename/content invocation without outer single quotes, repeated spaces and quotes, the previous literal-argument form, binary and empty input, an existing filename collision, no-argument allocation, the actual PowerShell native pipeline, and a destination failure. It used ten scenarios, with all temporary data in a NewTemp scratch folder outside the project.
 
 ## Directory and filename selection
 

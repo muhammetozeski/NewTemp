@@ -111,7 +111,7 @@ Assert ((Get-Item -LiteralPath (Join-Path $storage 'b\empty.mp3')).Length -eq 0)
 New-Case
 $target = Join-Path $storage 'a\dosya adı.mp3'
 Assert-Success (Start-Request -RawArguments '"dosya adı.mp3"  raw   content "quoted"') $target
-Assert ([IO.File]::ReadAllText($target) -ceq '  raw   content "quoted"') 'Raw argument tail was changed.'
+Assert ([IO.File]::ReadAllText($target) -ceq ' raw   content "quoted"') 'Raw argument tail was changed after the separator.'
 
 New-Case
 $text = "hello: invalid/name`nsecond line"

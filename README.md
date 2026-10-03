@@ -39,13 +39,18 @@ These PowerShell examples use the local installation path:
 & 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe' 'C:\Examples\test files'
 
 # Store literal content under a quoted filename. The extension is not interpreted.
-& 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe' '"sample.mp3"literal content'
+& 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe' "sample.mp3" literal content
+
+# Pipe a native program's binary output directly into a named file.
+cmd.exe /d /c type "C:\Examples\sample.mp3" | & 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe' "streamed.mp3"
 
 # A string containing characters invalid in directory names becomes a.txt.
 & 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe' 'text: disposable content'
 ```
 
-Paths that already exist take priority. Existing files and directories are **moved**, so their original paths disappear after success. Other valid directory names create or return that named directory. Text following a closing filename quote is written verbatim, including whitespace and additional quotes, as UTF-8 without a byte-order marker. A filename extension does not trigger conversion or decoding.
+Existing path arguments are **moved**, so their original paths disappear after success. Other valid directory names create or return that named directory. For named text, one space or tab separates the filename from its content; the remaining text is preserved, including additional whitespace and quotes, as UTF-8 without a byte-order marker. Outer single quotes around the filename and content together are unnecessary. A filename extension does not trigger conversion or decoding.
+
+With redirected standard input and one filename argument, NewTemp writes the incoming bytes directly into that file and prints its full path after the input ends. This preserves binary data, including zero bytes. A matching filename in the current directory is left in place. Native-to-native binary piping was verified in PowerShell; piping text objects instead supplies the shell's text representation.
 
 The supplied Base36 alphabet is `abcdefghijklmnopqrstuvwxyz0123456789`: indices start at zero, so the first names are `a`, `b`, and `c`. Holes are reused. The default exclusive limit is `10000`; exhaustion reports that the root has grown too large and some directories should be deleted.
 

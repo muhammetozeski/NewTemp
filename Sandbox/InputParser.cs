@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace NewTemp;
 
 /// <summary>Names the mutually exclusive actions selected from one command-line input.</summary>
-internal enum InputKind { Empty, File, Directory, NamedContent, FolderName, Text }
+internal enum InputKind { Empty, File, Directory, NamedContent, Stream, FolderName, Text }
 
 /// <summary>Contains the selected action and its unmodified source or content.</summary>
 /// <param name="Kind">The action selected by precedence.</param>
@@ -15,6 +15,32 @@ internal sealed record InputRequest(InputKind Kind, string Value, string? FileNa
 internal static class InputParser
 {
     const bool IsLogEnabled = true;
+
+    /// <summary>Accepts normal filename arguments and selects binary input when it is redirected.</summary>
+    /// <param name="args">The decoded process arguments.</param>
+    /// <param name="hasStandardInput">Whether the process has redirected standard input.</param>
+    /// <returns>The selected file, directory, text, or stream request.</returns>
+    public static InputRequest Parse(string[] args, bool hasStandardInput)
+    {
+        if (args.Length > 0 && IsValidName(args[0]) && Path.HasExtension(args[0]))
+        {
+            if (args.Length == 1 && hasStandardInput)
+                return new(InputKind.Stream, string.Empty, args[0]);
+            if (args.Length > 1)
+            {
+                string rawInput = Read(args);
+                int tokenEnd = rawInput.StartsWith('"')
+                    ? rawInput.IndexOf('"', 1) + 1
+                    : rawInput.IndexOfAny([' ', '\t']);
+                string content = tokenEnd > 0 ? rawInput[tokenEnd..] : string.Join(' ', args.Skip(1));
+                // The first whitespace character separates the filename argument from content.
+                if (content.Length > 0 && content[0] is ' ' or '\t')
+                    content = content[1..];
+                return new(InputKind.NamedContent, content, args[0]);
+            }
+        }
+        return Parse(Read(args));
+    }
 
     /// <summary>Reads arguments while retaining literal spacing in the raw multi-argument tail.</summary>
     /// <param name="args">The decoded process arguments.</param>

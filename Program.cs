@@ -20,7 +20,12 @@ internal static class Program
             return 2;
         }
 
-        var result = RunSafely(() => NewTempService.Execute(InputParser.Read(args)));
+        var result = RunSafely(() =>
+        {
+            InputRequest request = InputParser.Parse(args, Console.IsInputRedirected);
+            using Stream? input = request.Kind == InputKind.Stream ? Console.OpenStandardInput() : null;
+            return NewTempService.Execute(request, input);
+        });
         if (result.Succeeded)
         {
             Console.WriteLine(result.Value);

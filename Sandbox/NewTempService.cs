@@ -17,11 +17,11 @@ internal static class NewTempService
     const bool IsLogEnabled = true;
 
     /// <summary>Completes one request and returns the exact resulting file or directory path.</summary>
-    /// <param name="input">The command-line input with literal content retained.</param>
+    /// <param name="request">The parsed command-line request.</param>
+    /// <param name="standardInput">The byte stream for a redirected-input request.</param>
     /// <returns>The created directory or stored item path.</returns>
-    public static string Execute(string input)
+    public static string Execute(InputRequest request, Stream? standardInput = null)
     {
-        InputRequest request = InputParser.Parse(input);
         string root = Settings.RootDirectory.Value;
         if (request.Kind == InputKind.Directory &&
             (string.Equals(Path.TrimEndingDirectorySeparator(request.Value), root, StringComparison.OrdinalIgnoreCase) ||
@@ -38,7 +38,7 @@ internal static class NewTempService
 
             Directory.CreateDirectory(root);
             var folders = Directory.GetDirectories(root).Select(Path.GetFileName).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            Log($"Request selected; kind={request.Kind}; inputLength={input.Length}; root={root}", isRun: IsLogEnabled);
+            Log($"Request selected; kind={request.Kind}; inputLength={request.Value.Length}; fileName={request.FileName}; root={root}", isRun: IsLogEnabled);
             Log(folders, isRun: IsLogEnabled);
             string folder = request.Kind == InputKind.FolderName
                 ? Path.Combine(root, request.Value)
@@ -50,6 +50,7 @@ internal static class NewTempService
                 InputKind.File => MoveFile(request.Value, folder),
                 InputKind.Directory => MoveDirectory(request.Value, folder),
                 InputKind.NamedContent => WriteContent(folder, request.FileName!, request.Value),
+                InputKind.Stream => WriteStream(folder, request.FileName!, standardInput ?? throw new ArgumentNullException(nameof(standardInput))),
                 InputKind.Text => WriteContent(folder, AllocateTextName(folder), request.Value),
                 _ => folder
             };
@@ -107,6 +108,20 @@ internal static class NewTempService
         using var writer = new StreamWriter(file, new UTF8Encoding(false));
         writer.Write(content);
         Log($"Content written; destination={destination}; characters={content.Length}; encoding=UTF-8", isRun: IsLogEnabled);
+        return destination;
+    }
+
+    /// <summary>Copies redirected input directly into the destination without decoding or buffering the entire file.</summary>
+    /// <param name="folder">The allocated sandbox folder.</param>
+    /// <param name="fileName">The valid destination filename.</param>
+    /// <param name="input">The stream owned by the caller, read until end of input.</param>
+    /// <returns>The completed file's full path.</returns>
+    static string WriteStream(string folder, string fileName, Stream input)
+    {
+        string destination = Path.Combine(folder, fileName);
+        using var file = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        input.CopyTo(file);
+        Log($"Stream written; destination={destination}; bytes={file.Position}", isRun: IsLogEnabled);
         return destination;
     }
 
