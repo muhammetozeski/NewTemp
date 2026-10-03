@@ -4,6 +4,6 @@
   <s name="AppTitle">NewTemp</s>
   <s name="FolderLimit">The {0} folder has grown too large. All {1} candidate names are occupied; delete some folders.</s>
   <s name="FileLimit">No unused .txt filename was found in {0}. Delete some files.</s>
-  <s name="OperationFailed">The operation could not be completed. Error log: {0}</s>
+  <s name="ExceptionOccurred">An exception occurred while working in {0}: "{1}"</s>
   <s name="InvalidSource">The root folder or a folder containing it cannot be moved into itself: {0}</s>
 </strings>

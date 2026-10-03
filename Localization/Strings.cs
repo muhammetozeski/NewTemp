@@ -7,6 +7,6 @@ internal static class Strings
     public static string AppTitle = "NewTemp";
     public static string FolderLimit = "{0} klasörü çok büyüdü. {1} aday adı dolu; bazı klasörleri silmeniz gerekiyor.";
     public static string FileLimit = "{0} klasöründe boş bir .txt dosya adı bulunamadı. Bazı dosyaları silmeniz gerekiyor.";
-    public static string OperationFailed = "İşlem tamamlanamadı. Hata kaydı: {0}";
+    public static string ExceptionOccurred = "An exception occurred while working in {0}: \"{1}\"";
     public static string InvalidSource = "Kök klasör veya kök klasörü içeren bir klasör kendi içine taşınamaz: {0}";
 }

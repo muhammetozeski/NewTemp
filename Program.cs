@@ -15,10 +15,7 @@ internal static class Program
         Console.OutputEncoding = new UTF8Encoding(false);
         var initialization = ApplicationServices.Initialize();
         if (!initialization.Succeeded)
-        {
-            Console.Error.WriteLine(string.Format(Strings.OperationFailed, Logger.LogFileName));
-            return 2;
-        }
+            return ReportFailure(initialization.Error);
 
         var result = RunSafely(() =>
         {
@@ -32,9 +29,16 @@ internal static class Program
             return 0;
         }
 
-        Console.Error.WriteLine(result.Error is RequestException request
-            ? request.Message
-            : string.Format(Strings.OperationFailed, Logger.LogFileName));
-        return result.Error is RequestException failure ? failure.ExitCode : 2;
+        return ReportFailure(result.Error, result.Error is RequestException failure ? failure.ExitCode : 2);
+    }
+
+    /// <summary>Prints the complete exception without inferring whether partial output exists.</summary>
+    /// <param name="exception">The final exception, including its inner exceptions and stack trace.</param>
+    /// <param name="exitCode">The failure result returned to the shell.</param>
+    /// <returns>The unchanged failure exit code.</returns>
+    static int ReportFailure(Exception? exception, int exitCode = 2)
+    {
+        Console.Error.WriteLine(string.Format(Strings.ExceptionOccurred, AppTitle, exception?.ToString()));
+        return exitCode;
     }
 }
