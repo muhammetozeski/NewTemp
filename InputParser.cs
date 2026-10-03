@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace NewTemp;
 
 /// <summary>Names the mutually exclusive actions selected from one command-line input.</summary>
@@ -21,15 +23,28 @@ internal static class InputParser
     {
         if (args.Length == 0)
             return string.Empty;
-        if (args.Length == 1)
-            return args[0];
-
-        string commandLine = Environment.CommandLine;
+        string commandLine = Marshal.PtrToStringUni(GetCommandLineW())
+            ?? throw new InvalidOperationException("Windows command line is unavailable.");
         int end = commandLine.StartsWith('"')
             ? commandLine.IndexOf('"', 1) + 1
             : commandLine.IndexOf(' ');
-        return end > 0 ? commandLine[end..].TrimStart(' ', '\t') : string.Join(' ', args);
+        string rawInput = end > 0 ? commandLine[end..].TrimStart(' ', '\t') : string.Join(' ', args);
+        if (args.Length == 1)
+        {
+            // A shell removes filename quotes from argv. Retain a simple quoted filename,
+            // but decode an outer quoting layer around an entire literal-content argument.
+            if (rawInput.Length > 2 && rawInput[0] == '"' && rawInput[^1] == '"' &&
+                rawInput[1..^1] == args[0] && IsValidName(args[0]) && Path.HasExtension(args[0]))
+                return rawInput;
+            return args[0];
+        }
+        return rawInput;
     }
+
+    /// <summary>Returns Windows' original command line before .NET reconstructs argument text.</summary>
+    /// <returns>A pointer owned by Windows for the lifetime of the process.</returns>
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    static extern IntPtr GetCommandLineW();
 
     /// <summary>Selects a request; content following the closing filename quote stays exact.</summary>
     /// <param name="input">The input text after removal of the executable token.</param>
