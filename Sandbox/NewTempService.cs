@@ -41,7 +41,7 @@ internal static class NewTempService
             Log($"Request selected; kind={request.Kind}; inputLength={request.Value.Length}; fileName={request.FileName}; root={root}", isRun: IsLogEnabled);
             Log(folders, isRun: IsLogEnabled);
             string folder = request.Kind == InputKind.FolderName
-                ? Path.Combine(root, request.Value)
+                ? Allocate(root, folders, Settings.MaximumIndex.Value, request.Value)
                 : Allocate(root, folders, Settings.MaximumIndex.Value);
             Directory.CreateDirectory(folder);
 
@@ -64,16 +64,28 @@ internal static class NewTempService
         }
     }
 
-    /// <summary>Finds the first unoccupied name from the supplied Base36 alphabet.</summary>
+    /// <summary>Finds a free Base36 name or adds the first free Base36 suffix to a requested name.</summary>
     /// <param name="root">The destination parent.</param>
     /// <param name="folders">The initial directory-name snapshot.</param>
     /// <param name="limit">The exclusive integer bound.</param>
+    /// <param name="requestedName">An optional preferred directory name, used unchanged when free.</param>
     /// <returns>The first available full directory path.</returns>
-    static string Allocate(string root, HashSet<string?> folders, int limit)
+    static string Allocate(string root, HashSet<string?> folders, int limit, string? requestedName = null)
     {
+        if (requestedName is not null)
+        {
+            string requestedPath = Path.Combine(root, requestedName);
+            if (!folders.Contains(requestedName) && !File.Exists(requestedPath) && !Directory.Exists(requestedPath))
+                return requestedPath;
+        }
         for (int i = 0; i < limit; i++)
         {
             string name = Base36.ToBase36(i);
+            if (requestedName is not null)
+            {
+                string suffix = "-" + name;
+                name = requestedName[..Math.Min(requestedName.Length, 255 - suffix.Length)] + suffix;
+            }
             string candidate = Path.Combine(root, name);
             if (InputParser.IsValidName(name) && !folders.Contains(name) && !File.Exists(candidate) && !Directory.Exists(candidate))
                 return candidate;

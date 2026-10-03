@@ -70,7 +70,7 @@ New-Case '2'
 $full = Start-Request
 Assert ($full.ExitCode -eq 3 -and $full.Path.Length -eq 0 -and $full.Error.Contains('bazı klasörleri silmeniz')) 'Allocation limit was not reported.'
 Assert-Success (Start-Request @('named sandbox')) (Join-Path $storage 'named sandbox')
-Assert-Success (Start-Request @('named sandbox')) (Join-Path $storage 'named sandbox')
+Assert-Success (Start-Request @('named sandbox')) (Join-Path $storage 'named sandbox-a')
 
 foreach ($limit in @('1','0','-5','invalid','2147483648','')) {
     New-Case $limit
