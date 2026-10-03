@@ -22,7 +22,15 @@ internal static class ApplicationServices
                 return;
 
             Directory.CreateDirectory(AppPaths.UserData);
-            SettingsManager.LoadSettings();
+            try
+            {
+                SettingsManager.LoadSettings();
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                Log($"Settings unavailable; retaining defaults; path={ConfigFileName}; error={exception}", isRun: IsLogEnabled);
+            }
+            Configuration.Validate();
             LocManager.Init(Settings.Language.Value);
             ValidateLanguageFile("tr");
             ValidateLanguageFile("en");

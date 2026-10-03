@@ -19,10 +19,10 @@ public static class Logger
 
     public static readonly string LogsFolder = Path.Combine(AppPaths.AppCache, "Logs");
     public const string LogFileNamePrefix = "Logs";
-    public readonly static string LogFileName = LogsFolder + "\\" + LogFileNamePrefix + " " + startTime + ".txt";
+    public readonly static string LogFileName = LogsFolder + "\\" + LogFileNamePrefix + " " + startTime + " " + Environment.ProcessId + ".txt";
 
     // enter -1 to disable
-    const int DeleteOlderThanLastXFile = 3;
+    static readonly int DeleteOlderThanLastXFile = -1;
 
     public static readonly ConcurrentQueue<string> AllLogs = new();
 
@@ -62,7 +62,7 @@ public static class Logger
     }
 
 
-    public static string? Log(object? MessageObject, ConsoleColor? consoleColor = null, bool PrintToConsole = true, bool WriteToDisk = true, bool UseNewLine = true,
+    public static string? Log(object? MessageObject, ConsoleColor? consoleColor = null, bool PrintToConsole = false, bool WriteToDisk = true, bool UseNewLine = true,
         [CallerMemberName] string callerFunction = "",
         [CallerFilePath] string callerFilePath = "",
         [CallerLineNumber] int callerLine = 0, bool isRun = true

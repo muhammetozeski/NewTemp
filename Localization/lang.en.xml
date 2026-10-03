@@ -1,25 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <strings>
   <LanguageName>English</LanguageName>
-  <s name="AppTitle">Example App</s>
-  <s name="AppDescription">Application description</s>
-  <s name="SettingLanguage">Language</s>
-  <s name="LanguageSystem">Follow Windows</s>
-  <s name="SettingsTitle">Settings</s>
-  <s name="SettingExampleText">Example text setting</s>
-  <s name="SettingExampleNumber">Example number setting</s>
-  <s name="SettingExampleEnabled">Example feature enabled</s>
-  <s name="SettingsSaved">Settings saved.</s>
-  <s name="ButtonSave">Save</s>
-  <s name="ButtonCancel">Cancel</s>
-  <s name="ButtonRetry">Retry</s>
-  <s name="ButtonClose">Close</s>
-  <s name="ButtonOpenFolder">Open folder</s>
-  <s name="StatusReady">Ready</s>
-  <s name="StatusWorking">Operation in progress.</s>
-  <s name="StatusCompleted">Operation completed.</s>
-  <s name="StatusCanceled">Operation canceled.</s>
-  <s name="StatusFailed">The operation could not be completed.</s>
-  <s name="ProgressItems">Processed {0} / {1} items.</s>
-  <s name="ExampleMultiline">First line\nSecond line</s>
+  <s name="AppTitle">NewTemp</s>
+  <s name="FolderLimit">The {0} folder has grown too large. All {1} candidate names are occupied; delete some folders.</s>
+  <s name="FileLimit">No unused .txt filename was found in {0}. Delete some files.</s>
+  <s name="OperationFailed">The operation could not be completed. Error log: {0}</s>
+  <s name="InvalidSource">The root folder or a folder containing it cannot be moved into itself: {0}</s>
 </strings>

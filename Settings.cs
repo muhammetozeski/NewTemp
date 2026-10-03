@@ -13,10 +13,8 @@ internal static class Settings
     internal const bool IsLogEnabled = true;
 
     public static readonly Setting<string> Language = new("system");
-    public static readonly Setting<bool> ExampleEnabled = new(true);
-    public static readonly Setting<uint> ExampleCount = new(20);
-    public static readonly Setting<string> ExampleText = new("Example value");
-    public static readonly Setting<string> ExampleFileName = new("example.txt");
+    public static readonly Setting<string> RootDirectory = new(DefaultRootDirectory);
+    public static readonly Setting<int> MaximumIndex = new(DefaultMaximumIndex);
 }
 /// <summary>
 /// A common interface for all setting types, allowing polymorphic management.
