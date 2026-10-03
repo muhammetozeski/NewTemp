@@ -29,7 +29,7 @@ These PowerShell examples use the local installation path:
 # Create the first available short directory, such as C:\C\a.
 & 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe'
 
-# Create a directory with this exact name.
+# Create a fresh named directory, adding a Base36 suffix if the name is occupied.
 & 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe' 'test sandbox'
 
 # Move an existing file into a new short directory and print its new path.
@@ -48,13 +48,13 @@ cmd.exe /d /c type "C:\Examples\sample.mp3" | & 'C:\E\kp\aaBenimProgramlarim\New
 & 'C:\E\kp\aaBenimProgramlarim\NewTemp\NewTemp.exe' 'text: disposable content'
 ```
 
-Existing path arguments are **moved**, so their original paths disappear after success. Other valid directory names create or return that named directory. For named text, one space or tab separates the filename from its content; the remaining text is preserved, including additional whitespace and quotes, as UTF-8 without a byte-order marker. Outer single quotes around the filename and content together are unnecessary. A filename extension does not trigger conversion or decoding.
+Existing path arguments are **moved**, so their original paths disappear after success. Other valid directory names create a new empty directory: `test sandbox`, then `test sandbox-a`, `test sandbox-b`, and the next free Base36 suffix. Existing directories and files are skipped. For named text, one space or tab separates the filename from its content; the remaining text is preserved, including additional whitespace and quotes, as UTF-8 without a byte-order marker. Outer single quotes around the filename and content together are unnecessary. A filename extension does not trigger conversion or decoding.
 
 With redirected standard input and one filename argument, NewTemp writes the incoming bytes directly into that file and prints its full path after the input ends. This preserves binary data, including zero bytes. A matching filename in the current directory is left in place. Native-to-native binary piping was verified in PowerShell; piping text objects instead supplies the shell's text representation.
 
 The supplied Base36 alphabet is `abcdefghijklmnopqrstuvwxyz0123456789`: indices start at zero, so the first names are `a`, `b`, and `c`. Holes are reused. The default exclusive limit is `10000`; exhaustion reports that the root has grown too large and some directories should be deleted.
 
-Success writes one full path to standard output and exits with code `0`. Failure writes its explanation to standard error: code `3` for name exhaustion and code `2` for other failures. The utility does not wait for a keypress.
+Success writes one full path to standard output and exits with code `0`. Failure writes `An exception occurred while working in NewTemp: "..."` with the complete exception's `ToString()` output, including its type, inner exceptions, and stack trace, to standard error: code `3` for name exhaustion and code `2` for other failures. A failure does not assert whether a directory or partial file was created. The utility does not wait for a keypress.
 
 ## Configure
 

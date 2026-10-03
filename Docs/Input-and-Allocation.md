@@ -14,7 +14,7 @@ Read this before changing command-line parsing, name selection, or moving user d
 | Existing file path | Move the file, retaining its filename and bytes | New file path |
 | Existing directory path | Move the directory into a new sandbox | New directory path |
 | Double-quoted valid filename with an extension, followed by any content | Write the exact tail under that filename | New file path |
-| Valid Windows directory name | Create or return that named directory under the root | Named directory |
+| Valid Windows directory name | Create a fresh directory, adding a Base36 suffix if needed | New named directory |
 | Any other text | Allocate a Base36 directory and its first unused Base36 `.txt` name | New text file path |
 
 Existing paths win in the original path/name/text selection even when quoted. A stream request treats its filename as the destination name, leaving any matching source file untouched. A nonexistent path containing separators is text. Windows device names, trailing spaces or periods, and traversal segments cannot become directory names; they become text instead. Quoted names containing a path cannot escape the sandbox and fall through to text.
@@ -41,7 +41,7 @@ The v1.1.0 input suite in [Verify-Input.ps1](../tests/Verify-Input.ps1) verified
 
 The supplied Base36 implementation uses `abcdefghijklmnopqrstuvwxyz0123456789`. Do not substitute a digits-first Base36 library. The loop deliberately finds the first gap instead of incrementing the greatest existing name.
 
-The `.txt` fallback uses the same sequence and exclusive limit for filenames inside the allocated folder. `FileMode.CreateNew` prevents an existing file from being overwritten. Explicit directory names bypass the numeric allocation limit. Named directories are idempotent when they already exist under the configured root.
+The `.txt` fallback uses the same sequence and exclusive limit for filenames inside the allocated folder. `FileMode.CreateNew` prevents an existing file from being overwritten. A requested directory name is used unchanged if free; otherwise `Allocate` tries `name-a`, `name-b`, and the first unused suffix from the supplied Base36 alphabet, bounded by `MaximumIndex`. Directory comparisons ignore case, and files occupying candidate paths are skipped. A name near Windows' 255-character segment limit is shortened only enough to fit its suffix. Existing named directories are not reused.
 
 A Windows named mutex serializes NewTemp requests using the same normalized root. An abandoned owner is logged and the next process resumes selection. The root and its ancestors cannot be moved into that root.
 
@@ -49,7 +49,7 @@ A Windows named mutex serializes NewTemp requests using the same normalized root
 
 Files use `File.Move`; directories use `Directory.Move`. The move service handles Windows error `17` for cross-volume directory moves with a recursive copy, then deletes the source only after copying completes. Links are recreated without recursively following them. This alternative is present in source; the same-volume directory move was the exercised path in the integration suite.
 
-Only sharing and lock violations, Windows errors `32` and `33`, are retried through Polly. Each file operation is synchronous and finishes before another attempt begins. Permanent failures propagate to the one outer `RunSafely` boundary, which records the error and returns failure. No success path is printed on failure.
+Only sharing and lock violations, Windows errors `32` and `33`, are retried through Polly. Each file operation is synchronous and finishes before another attempt begins. Permanent failures propagate to the one outer `RunSafely` boundary, which records the error and returns failure. `Program.ReportFailure` prints the complete exception's `ToString()` under the requested English prefix, including initialization failures. It does not infer whether a directory or partial output exists. No success path is printed on failure.
 
 ## Verification scope
 
