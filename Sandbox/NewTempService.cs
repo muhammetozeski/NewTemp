@@ -83,7 +83,7 @@ internal static class NewTempService
             string name = Base36.ToBase36(i);
             if (requestedName is not null)
             {
-                string suffix = "-" + name;
+                string suffix = name;
                 name = requestedName[..Math.Min(requestedName.Length, 255 - suffix.Length)] + suffix;
             }
             string candidate = Path.Combine(root, name);
